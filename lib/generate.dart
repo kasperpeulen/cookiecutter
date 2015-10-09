@@ -120,7 +120,7 @@ void generateFile({String projectDir, String inFile, String outfile, Map context
   logging.info('Generating file $inFile');
 
   // Render the path to the output file (not including the root project dir)
-  // String outfile = path.join(projectDir, render(path.relative(inFile), context));
+  outfile ??= path.join(projectDir, render(path.relative(inFile), context));
   // logging.info('outfile is $outfile');
 
   // just copy over binary files. Don't render.
