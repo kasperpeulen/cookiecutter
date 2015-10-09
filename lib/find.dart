@@ -1,8 +1,9 @@
 /// Functions for finding Cookiecutter templates and other components.
 library cookiecutter.find;
 
-import 'package:cookiecutter/common.dart';
 import 'dart:io';
+
+import 'package:cookiecutter/common.dart';
 import 'package:cookiecutter/exceptions.dart';
 
 /// Determines which child directory of `repo_dir` is the project template.

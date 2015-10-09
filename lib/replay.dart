@@ -12,11 +12,14 @@ String getFileName(replayDir, templateName) {
 }
 
 Map load(String templateName) {
-  String replayDir = getUserConfig()['replayDir'];
+  if (templateName == null) {
+    throw new TypeError();
+  }
+
+  String replayDir = getUserConfig()['replay_dir'];
   File replayFile = new File(getFileName(replayDir, templateName));
 
   Map context = JSON.decode(replayFile.readAsStringSync());
-
   if (!context.containsKey('cookiecutter')) {
     throw new ArgumentError('Context is required to contain a cookiecutter key');
   }
@@ -25,6 +28,10 @@ Map load(String templateName) {
 }
 
 void dump(String templateName, Map context) {
+  if (templateName == null) {
+    throw new TypeError();
+  }
+
   if (!context.containsKey('cookiecutter')) {
     throw new ArgumentError('Context is required to contain a cookiecutter key');
   }

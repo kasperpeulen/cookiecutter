@@ -35,9 +35,11 @@ Map getConfig(String configPath) {
 
 /// Retrieve config from the user's ~/.cookiecutterrc, if it exists.
 /// Otherwise, return null.
-Map getUserConfig() {
+///
+/// This is function is written with a typedef, so that it can be mocked.
+VoidToMap getUserConfig = () {
 
-  // TODO: test on windows...
+  // TODO (original) : test on windows...
   String USER_CONFIG_PATH = expandPath('~/.cookiecutterrc');
   File f = new File(USER_CONFIG_PATH);
 
@@ -45,4 +47,5 @@ Map getUserConfig() {
     return getConfig(USER_CONFIG_PATH);
   }
   return {}..addAll(DEFAULT_CONFIG);
-}
+};
+typedef Map VoidToMap();

@@ -3,6 +3,7 @@ library cookiecutter.common;
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:logging/logging.dart';
+import 'package:matcher/matcher.dart';
 
 String expandPath(String path) {
   if (path[0] != '~') {
@@ -26,3 +27,6 @@ final Logger logging = new Logger('cookiecutter');
 Function exitWithSuccess = () {
   exit(0);
 };
+
+bool isBinary(String inFile) =>
+    new File(inFile).readAsStringSync().contains('\u0000\u0000\u0000\u0000');

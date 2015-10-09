@@ -10,5 +10,7 @@ dependencies:
   logging: '^0.11.2'
   prompt: '^0.1.7'
   yaml: '^2.1.7'
+  glob: '^1.0.5'
+  mustache4dart: '^1.0.10'
 dev_dependencies:
   test: '^0.12.4+9'

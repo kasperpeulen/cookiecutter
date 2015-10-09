@@ -19,10 +19,10 @@ main() {
     }
     expect(utils.makeSurePathExists(existingDir), isTrue);
     expect(utils.makeSurePathExists('test/blah'), isTrue);
-    expect(utils.makeSurePathExists('tests/trailingslash/'), isTrue);
+    expect(utils.makeSurePathExists('test/trailingslash/'), isTrue);
     expect(utils.makeSurePathExists(uncreatableDir), isFalse);
     new Directory('test/blah/').deleteSync();
-    new Directory('tests/trailingslash/').deleteSync();
+    new Directory('test/trailingslash/').deleteSync();
   });
   test('work in function', testWorkIn);
 }

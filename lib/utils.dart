@@ -4,7 +4,17 @@ library cookiecutter.utils;
 import 'dart:io';
 import 'common.dart';
 
+/// Error handler for `shutil.rmtree()` equivalent to `rm -rf`
+/// Usage: `shutil.rmtree(path, onerror=force_delete)`
+/// From stackoverflow.com/questions/1889597
+forceDelete(func, path, excInfo) {
 
+}
+
+/// Removes a directory and all its contents. Like rm -rf on Unix.
+rmTree(path) {
+  new Directory(path).deleteSync(recursive: true);
+}
 
 
 /// Ensures that a directory exists.
@@ -31,4 +41,11 @@ void workIn(String dirName, Function yield) {
   } finally {
     Directory.current = curdir;
   }
+}
+
+/// Makes [scriptPath] executable
+///
+/// [scriptPath] : The file to change
+makeExecutable(scriptPath) {
+
 }
