@@ -28,5 +28,12 @@ Function exitWithSuccess = () {
   exit(0);
 };
 
-bool isBinary(String inFile) =>
-    new File(inFile).readAsStringSync().contains('\u0000\u0000\u0000\u0000');
+bool isBinary(String inFile) {
+  bool b;
+  try {
+    b = new File(inFile).readAsStringSync().contains('\u0000\u0000\u0000\u0000');
+  } catch(e) {
+    b = true;
+  }
+  return b;
+}

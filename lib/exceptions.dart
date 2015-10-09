@@ -62,7 +62,11 @@ class ContextDecodingException implements Exception {
 
 /// Raised when the output directory of the project exists already.
 class OutputDirExistsException implements Exception {
+  final String directory;
 
+  OutputDirExistsException(this.directory);
+
+  toString() => 'Error: $directory already exists.';
 }
 
 /// Raised when cookiecutter is called with both `noInput==True` and

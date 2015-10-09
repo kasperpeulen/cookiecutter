@@ -27,7 +27,7 @@ bool copyWithoutRender(String path, Map context) {
         return true;
       }
     }
-  } catch(e) {
+  } catch (e) {
     return false;
   }
   return false;
@@ -36,7 +36,6 @@ bool copyWithoutRender(String path, Map context) {
 /// Modify the given context in place based on the overwrite_context.
 void applyOverwritesToContext(
     Map context, Map<String, String> overwriteContext) {
-
   overwriteContext.forEach((variable, overwrite) {
     if (!context.containsKey(variable)) {
       return;
@@ -117,27 +116,40 @@ Map generateContext(
 ///     template dir.
 /// [context] : Dict for populating the cookiecutter's variables.
 /// [env] : Jinja2 template execution environment.
-void generateFile({String projectDir, String inFile, Map context}) {
+void generateFile({String projectDir, String inFile, String outfile, Map context}) {
   logging.info('Generating file $inFile');
 
   // Render the path to the output file (not including the root project dir)
-  String outfile = path.join(projectDir, render(inFile, context));
-  logging.info('outfile is $outfile');
+  // String outfile = path.join(projectDir, render(path.relative(inFile), context));
+  // logging.info('outfile is $outfile');
 
   // just copy over binary files. Don't render.
   logging.info('Check $inFile to see if it\' is a binary');
 
-  if(isBinary(inFile)) {
+  if (isBinary(inFile)) {
     logging.info('Copying binary $inFile to $outfile without rendering');
+    try {
+      new File(inFile).copySync(outfile);
+    } catch(e) {
+      print(e);
+    }
   } else {
     var tmpl, renderedFile;
     try {
-      renderedFile = render(new File(inFile).readAsStringSync(), context);
-    } catch(e) {}
+      var file = new File(inFile);
+      renderedFile = render(file.readAsStringSync(), context);
+    } catch (e) {
+      throw new Exception('aaaaa');
+    }
 
     logging.info('Writing $outfile');
 
-    new File(outfile).writeAsStringSync(renderedFile);
+    try {
+      new File(outfile).writeAsStringSync(renderedFile);
+    } catch(e) {
+      throw new Exception('aaaaa');
+    }
+
   }
 
   // Apply file permissions to output file
@@ -147,13 +159,28 @@ void generateFile({String projectDir, String inFile, Map context}) {
 /// Renders the name of a directory, creates the directory, and returns its path.
 String renderAndCreateDir(String dirName, Map context, String outputDir,
     [bool overwriteIfExists = false]) {
-  // TODO
-  String dirToCreate;
+  String renderedDirname = render(dirName, context);
+  logging.info(
+      'Rendered dir $renderedDirname must exists in outputDir $outputDir');
+  String dirToCreate = path.normalize(path.join(outputDir, renderedDirname));
+  bool outputDirExists = new Directory(dirToCreate).existsSync();
+
+  if (overwriteIfExists) {
+    if (outputDirExists) {
+      logging
+          .info('Output directory $dirToCreate already exists, overwriting it');
+    }
+  } else {
+    if (outputDirExists) {
+      throw new OutputDirExistsException(dirToCreate);
+    }
+  }
+  makeSurePathExists(dirToCreate);
   return dirToCreate;
 }
 
 /// Ensures that dirname is a templated directory name.
-bool unsureDirIsTemplated(String dirName) {
+bool ensureDirIsTemplated(String dirName) {
   if (dirName.contains('{{') && dirName.contains('}}')) {
     return true;
   } else {
@@ -173,13 +200,12 @@ void generateFiles(
     Map context,
     outputDir: '.',
     bool overwriteIfExists: false}) {
-  context ??= {};
-
   String templateDir = findTemplate(repoDir);
   logging.info('Generating project from $templateDir');
+  context ??= {};
 
-  String unrenderedDir = path.split(templateDir)[1];
-  unsureDirIsTemplated(unrenderedDir);
+  String unrenderedDir = path.split(templateDir).last;
+  ensureDirIsTemplated(unrenderedDir);
   String projectDir =
       renderAndCreateDir(unrenderedDir, context, outputDir, overwriteIfExists);
 
@@ -193,18 +219,20 @@ void generateFiles(
   logging.info('projectDir is $projectDir');
 
   // run pre-gen hook from repoDir
-  workIn(repoDir, () => runHook('pre_gen_project', projectDir, context));
+  // TODO workIn(repoDir, () => runHook('pre_gen_project', projectDir, context));
 
   workIn(templateDir, () {
-    // TODO env = Environment(keep_trailing_newline=True)
-    // TODO env.loader = FileSystemLoader('.')
-
-    for (Directory rootDir in Directory.current.listSync()
-      ..retainWhere((e) => e is Directory)) {
+    List<Directory> dirs = Directory.current.listSync(recursive: true)
+      ..retainWhere((e) => e is Directory)..add(Directory.current);
+    dirs.sort((a,b) => a.path.length.compareTo(b.path.length));
+    for (Directory rootDir in dirs) {
       String root = rootDir.path;
-      List<Directory> dirs = rootDir.listSync()
-        ..retainWhere((e) => e is Directory);
-      List<File> files = rootDir.listSync()..retainWhere((e) => e is File);
+
+      List<Directory> ds = rootDir.listSync()..retainWhere((e) => e is Directory);
+      List<String> dirs = ds.map((d) => path.relative(d.path)).toList();
+
+      List<File> fs = rootDir.listSync()..retainWhere((e) => e is File);
+      List<String> files = fs.map((f) => f.path).toList();
 
       // We must separate the two types of dirs into different lists.
       // The reason is that we don't want ``os.walk`` to go through the
@@ -223,9 +251,33 @@ void generateFiles(
           renderDirs.add(d);
         }
       }
+      for (String copyDir in copyDirs) {
+        String indir = path.normalize(path.join(root, copyDir));
+        String outdir = path.normalize(path.join(projectDir, indir));
+        logging.info('Copying dir $indir to $outdir without rendering');
+        Process.runSync('cp', [indir, outdir]);
+      }
+      dirs = renderDirs;
+      for (var d in dirs) {
+        unrenderedDir = path.join(projectDir, d);
+        renderAndCreateDir(unrenderedDir, context, outputDir, overwriteIfExists);
+      }
+      for (var f in files) {
+        String infile = f;
+        String outfile = path.join(projectDir,  render(path.relative(infile), context));
+        if (copyWithoutRender(infile, context)) {
+          String outfileRendered = render(infile, context);
+          String outfile = path.join(projectDir, outfileRendered);
+          logging.info('Copying file $infile to $outfile without rendering');
+          Process.runSync('cp', [infile, outfile]);
+          continue;
+        }
+        logging.info('f is $f');
+        generateFile(projectDir: projectDir, inFile: infile, outfile: outfile, context: context);
+      }
     }
   });
 
   // run post-gen hook from repo_dir
-  workIn(repoDir, () => runHook('post_gen_project', projectDir, context));
+  // TODO workIn(repoDir, () => runHook('post_gen_project', projectDir, context));
 }
