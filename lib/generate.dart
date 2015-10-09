@@ -117,11 +117,11 @@ Map generateContext(
 ///     template dir.
 /// [context] : Dict for populating the cookiecutter's variables.
 /// [env] : Jinja2 template execution environment.
-void generateFile(projectDir, String inFile, context, env) {
+void generateFile({String projectDir, String inFile, Map context}) {
   logging.info('Generating file $inFile');
 
   // Render the path to the output file (not including the root project dir)
-  String outfile = path.join(projectDir, render(infile, context));
+  String outfile = path.join(projectDir, render(inFile, context));
   logging.info('outfile is $outfile');
 
   // just copy over binary files. Don't render.
@@ -132,7 +132,7 @@ void generateFile(projectDir, String inFile, context, env) {
   } else {
     var tmpl, renderedFile;
     try {
-      renderedFile = render(tmpl, context);
+      renderedFile = render(new File(inFile).readAsStringSync(), context);
     } catch(e) {}
 
     logging.info('Writing $outfile');
