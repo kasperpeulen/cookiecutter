@@ -269,7 +269,7 @@ void generateFiles(
           String outfileRendered = render(infile, context);
           String outfile = path.join(projectDir, outfileRendered);
           logging.info('Copying file $infile to $outfile without rendering');
-          Process.runSync('cp', [infile, outfile]);
+          new File(infile).copy(outfile);
           continue;
         }
         logging.info('f is $f');
