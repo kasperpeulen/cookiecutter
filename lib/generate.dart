@@ -126,40 +126,24 @@ Map generateContext(
 ///     template dir.
 /// [context] : Dict for populating the cookiecutter's variables.
 /// [env] : Jinja2 template execution environment.
-void generateFile({String projectDir, String inFile, String outfile, Map context}) {
+void generateFile(
+    {String projectDir, String inFile, String outfile, Map context}) {
   logging.fine('Generating file $inFile');
 
   // Render the path to the output file (not including the root project dir)
-//  outfile ??= path.join(projectDir, render(path.relative(inFile), context));
-  // logging.fine('outfile is $outfile');
+  outfile ??= path.join(projectDir, render(path.relative(inFile), context));
 
   // just copy over binary files. Don't render.
   logging.fine('Check $inFile to see if it\' is a binary');
 
+
   if (isBinary(inFile)) {
     logging.fine('Copying binary $inFile to $outfile without rendering');
-    try {
-      new File(inFile).copySync(outfile);
-    } catch(e) {
-      print(e);
-    }
+    new File(inFile).copySync(outfile);
   } else {
-    var renderedFile;
-    try {
-      var file = new File(inFile);
-      renderedFile = render(file.readAsStringSync(), context);
-    } catch (e) {
-      print(e);
-    }
-
-    logging.fine('Writing $outfile');
-
-    try {
-      new File(outfile).writeAsStringSync(renderedFile);
-    } catch(e) {
-      print(e);
-    }
-
+    var renderedFile = render(new File(inFile).readAsStringSync(), context);
+      logging.fine('Writing $outfile');
+    new File(outfile).writeAsStringSync(renderedFile);
   }
 
   // Apply file permissions to output file
@@ -201,12 +185,15 @@ void generateFiles(
 
   workIn(templateDir, () {
     List<Directory> dirs = Directory.current.listSync(recursive: true)
-      ..retainWhere((e) => e is Directory)..add(Directory.current);
-    dirs.sort((a,b) => a.path.length.compareTo(b.path.length));
+      ..retainWhere((e) => e is Directory)
+      ..removeWhere((e) => e.path.contains('packages'))
+      ..add(Directory.current);
+    dirs.sort((a, b) => a.path.length.compareTo(b.path.length));
     for (Directory rootDir in dirs) {
       String root = rootDir.path;
 
-      List<Directory> ds = rootDir.listSync()..retainWhere((e) => e is Directory);
+      List<Directory> ds = rootDir.listSync()
+        ..retainWhere((e) => e is Directory);
       List<String> dirs = ds.map((d) => path.relative(d.path)).toList();
 
       List<File> fs = rootDir.listSync()..retainWhere((e) => e is File);
@@ -238,11 +225,13 @@ void generateFiles(
       dirs = renderDirs;
       for (var d in dirs) {
         unrenderedDir = path.join(projectDir, d);
-        renderAndCreateDir(unrenderedDir, context, outputDir, overwriteIfExists);
+        renderAndCreateDir(
+            unrenderedDir, context, outputDir, overwriteIfExists);
       }
       for (var f in files) {
         String infile = f;
-        String outfile = path.join(projectDir,  render(path.relative(infile), context));
+        String outfile =
+            path.join(projectDir, render(path.relative(infile), context));
         if (copyWithoutRender(infile, context)) {
           String outfileRendered = render(infile, context);
           String outfile = path.join(projectDir, outfileRendered);
@@ -251,13 +240,17 @@ void generateFiles(
           continue;
         }
         logging.fine('f is $f');
-        generateFile(projectDir: projectDir, inFile: infile, outfile: outfile, context: context);
+        generateFile(
+            projectDir: projectDir,
+            inFile: infile,
+            outfile: outfile,
+            context: context);
       }
     }
   });
 
   // run post-gen hook from repo_dir
-   workIn(repoDir, () => runHook('post_gen_project', projectDir, context));
+  workIn(repoDir, () => runHook('post_gen_project', projectDir, context));
 }
 
 /// Renders the name of a directory, creates the directory, and returns its path.

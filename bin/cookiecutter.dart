@@ -27,7 +27,7 @@ class CookiecutterCommandRunner extends CommandRunner {
 
   CookiecutterCommandRunner(List<String> args)
       : super('cookiecutter',
-             'Create a project from a Cookiecutter project template.') {
+            'Create a project from a Cookiecutter project template.') {
     argParser
       ..addFlag("no-input",
           negatable: false,

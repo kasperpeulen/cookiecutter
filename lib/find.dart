@@ -6,10 +6,10 @@ import 'dart:io';
 import 'package:cookiecutter/common.dart';
 import 'package:cookiecutter/exceptions.dart';
 
-/// Determines which child directory of `repo_dir` is the project template.
+/// Determines which child directory of [repoDir] is the project template.
 ///
-/// [repoDir] : Local directory of newly cloned repo.
-/// returns [projectTemplate] : Relative path to project template.
+/// [repoDir]: Local directory of newly cloned repo.
+/// returns [projectTemplate]: Relative path to project template.
 String findTemplate(String repoDir) {
   logging.fine('Searching $repoDir for the project template.');
 

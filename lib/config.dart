@@ -26,11 +26,9 @@ Map getConfig(String configPath) {
   Map yaml;
   try {
     yaml = loadYaml(config.readAsStringSync());
-  } on YamlException catch(e) {
+  } on YamlException catch (e) {
     throw new InvalidConfiguration(configPath, e.span.start.line, e.message);
   }
-
-  yaml.values.map((e) => expandPath(e));
 
   return {}..addAll(DEFAULT_CONFIG)..addAll(yaml);
 }
@@ -40,7 +38,6 @@ Map getConfig(String configPath) {
 ///
 /// This is function is written with a typedef, so that it can be mocked.
 VoidToMap getUserConfig = () {
-
   // TODO (original) : test on windows...
   String USER_CONFIG_PATH = expandPath('~/.cookiecutterrc');
   File f = new File(USER_CONFIG_PATH);
@@ -50,4 +47,5 @@ VoidToMap getUserConfig = () {
   }
   return {}..addAll(DEFAULT_CONFIG);
 };
+
 typedef Map VoidToMap();

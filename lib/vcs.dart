@@ -111,6 +111,5 @@ String clone(String repoUrl,
           workingDirectory: repoDir);
     }
   }
-
   return repoDir;
 }
