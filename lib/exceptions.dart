@@ -47,7 +47,8 @@ class OutputDirExistsException implements Exception {
 
   OutputDirExistsException(this.directory);
 
-  toString() => 'Error: $directory already exists.';
+  toString() => 'Error: $directory already exists.'
+      'Use the -f flag to override the directory.';
 }
 
 /// Raised if a repo's type cannot be determined.

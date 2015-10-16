@@ -1,5 +1,5 @@
 name: cookiecutter
-version: 0.0.1
+version: 0.1.0
 description: Port of cookiecutter to dart.
 author: Kasper Peulen <kasperpeulen@gmail.com>
 environment:

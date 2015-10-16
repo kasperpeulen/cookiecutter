@@ -265,7 +265,7 @@ String renderAndCreateDir(String dirName, Map context, String outputDir,
   String dirToCreate = path.normalize(path.join(outputDir, renderedDirname));
   bool outputDirExists = new Directory(dirToCreate).existsSync();
 
-  if (overwriteIfExists) {
+  if (overwriteIfExists || dirToCreate == '.') {
     if (outputDirExists) {
       logging
           .info('Output directory $dirToCreate already exists, overwriting it');
