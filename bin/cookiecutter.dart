@@ -62,12 +62,15 @@ class CookiecutterCommandRunner extends CommandRunner {
     // TODO: remove this later
     verbose = true;
 
+    hierarchicalLoggingEnabled = true;
+
     if (verbose) {
       logging.level = Level.FINE;
     } else {
       logging.level = Level.WARNING;
     }
 
+    logging.fine("hello");
     String template = argResults.rest[0];
 
     cookiecutter(template,

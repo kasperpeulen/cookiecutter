@@ -197,7 +197,7 @@ void generateFiles(
   logging.fine('projectDir is $projectDir');
 
   // run pre-gen hook from repoDir
-  // TODO workIn(repoDir, () => runHook('pre_gen_project', projectDir, context));
+  workIn(repoDir, () => runHook('pre_gen_project', projectDir, context));
 
   workIn(templateDir, () {
     List<Directory> dirs = Directory.current.listSync(recursive: true)
@@ -257,7 +257,7 @@ void generateFiles(
   });
 
   // run post-gen hook from repo_dir
-  // TODO workIn(repoDir, () => runHook('post_gen_project', projectDir, context));
+   workIn(repoDir, () => runHook('post_gen_project', projectDir, context));
 }
 
 /// Renders the name of a directory, creates the directory, and returns its path.

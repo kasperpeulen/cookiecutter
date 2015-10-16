@@ -47,5 +47,8 @@ void workIn(String dirName, Function yield) {
 ///
 /// [scriptPath] : The file to change
 makeExecutable(scriptPath) {
-
+  if (!Platform.isWindows) {
+    var result = Process.runSync("chmod", ["u+x", scriptPath]);
+    if (result.exitCode != 0) throw new Exception(result.stderr);
+  }
 }

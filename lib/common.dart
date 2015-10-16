@@ -21,9 +21,7 @@ String expandPath(String path) {
 String get userHomeDir =>
     Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'];
 
-final Logger logging = new Logger('cookiecutter')
-  ..onRecord.listen((LogRecord rec) =>
-      print('${rec.level.name}: ${rec.time}: ${rec.message}'));
+final Logger logging = new Logger('cookiecutter');
 
 // Having this as a global variable, so that it can be mocked.
 Function exitWithSuccess = () {
