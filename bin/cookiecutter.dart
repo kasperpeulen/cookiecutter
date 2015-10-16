@@ -59,9 +59,6 @@ class CookiecutterCommandRunner extends CommandRunner {
 
     bool verbose = argResults['verbose'];
 
-    // TODO: remove this later
-    verbose = true;
-
     hierarchicalLoggingEnabled = true;
 
     if (verbose) {
@@ -70,7 +67,6 @@ class CookiecutterCommandRunner extends CommandRunner {
       logging.level = Level.WARNING;
     }
 
-    logging.fine("hello");
     String template = argResults.rest[0];
 
     cookiecutter(template,
