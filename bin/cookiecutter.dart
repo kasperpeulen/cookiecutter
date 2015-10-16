@@ -58,8 +58,14 @@ class CookiecutterCommandRunner extends CommandRunner {
         print('${rec.level.name}: ${rec.time}: ${rec.message}'));
 
     bool verbose = argResults['verbose'];
+
+    // TODO: remove this later
+    verbose = true;
+
     if (verbose) {
       logging.level = Level.FINE;
+    } else {
+      logging.level = Level.WARNING;
     }
 
     String template = argResults.rest[0];
