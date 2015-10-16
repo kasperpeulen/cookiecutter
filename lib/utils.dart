@@ -2,20 +2,23 @@
 library cookiecutter.utils;
 
 import 'dart:io';
+
 import 'common.dart';
 
 /// Error handler for `shutil.rmtree()` equivalent to `rm -rf`
 /// Usage: `shutil.rmtree(path, onerror=force_delete)`
 /// From stackoverflow.com/questions/1889597
-forceDelete(func, path, excInfo) {
+forceDelete(func, path, excInfo) {}
 
+/// Makes [scriptPath] executable
+///
+/// [scriptPath] : The file to change
+makeExecutable(scriptPath) {
+  if (!Platform.isWindows) {
+    var result = Process.runSync("chmod", ["u+x", scriptPath]);
+    if (result.exitCode != 0) throw new Exception(result.stderr);
+  }
 }
-
-/// Removes a directory and all its contents. Like rm -rf on Unix.
-rmTree(path) {
-  new Directory(path).deleteSync(recursive: true);
-}
-
 
 /// Ensures that a directory exists.
 /// [path] : A Directory path.
@@ -29,6 +32,11 @@ makeSurePathExists(String path) {
   return true;
 }
 
+/// Removes a directory and all its contents. Like rm -rf on Unix.
+rmTree(path) {
+  new Directory(path).deleteSync(recursive: true);
+}
+
 /// Context manager version of os.chdir. When exited, returns to the working
 /// directory prior to entering.
 void workIn(String dirName, Function yield) {
@@ -40,15 +48,5 @@ void workIn(String dirName, Function yield) {
     }
   } finally {
     Directory.current = curdir;
-  }
-}
-
-/// Makes [scriptPath] executable
-///
-/// [scriptPath] : The file to change
-makeExecutable(scriptPath) {
-  if (!Platform.isWindows) {
-    var result = Process.runSync("chmod", ["u+x", scriptPath]);
-    if (result.exitCode != 0) throw new Exception(result.stderr);
   }
 }

@@ -1,11 +1,13 @@
 /// Functions for discovering and executing various cookiecutter hooks.
 library cookiecutter.hooks;
-import 'package:cookiecutter/common.dart';
+
 import 'dart:io';
-import 'package:path/path.dart' as path;
+
+import 'package:cookiecutter/common.dart';
+import 'package:cookiecutter/utils.dart';
 import 'package:grinder/grinder.dart' as grind;
 import 'package:grinder/grinder.dart';
-import 'package:cookiecutter/utils.dart';
+import 'package:path/path.dart' as path;
 
 List _HOOKS = <String>[
   'pre_gen_project',
@@ -36,6 +38,15 @@ Map findHooks() {
   return r;
 }
 
+void runHook(hookName, projectDir, context) {
+  var script = findHooks()[hookName];
+  if (script == null) {
+    logging.fine('No hooks found');
+    return;
+  }
+  runScriptWithContext(script, projectDir, context);
+}
+
 /// Executes a script from a working directory.
 ///
 /// [scriptPath] : Absolute path to the script to run.
@@ -43,7 +54,6 @@ Map findHooks() {
 void runScript(String scriptPath, {cwd: '.'}) {
   RunOptions options = new RunOptions(workingDirectory: cwd, runInShell: true);
   grind.run(scriptPath, arguments: [], runOptions: options);
-//  Process.runSync(scriptPath, [], workingDirectory: cwd);
 }
 
 /// Executes a script after rendering with it Jinja.
@@ -54,13 +64,4 @@ void runScriptWithContext(String scriptPath, String cwd, Map context) {
   // TODO
   makeExecutable(scriptPath);
   runScript(scriptPath, cwd: cwd);
-}
-
-void runHook(hookName, projectDir, context) {
-  var script = findHooks()[hookName];
-  if (script == null) {
-    logging.fine('No hooks found');
-    return;
-  }
-  runScriptWithContext(script, projectDir, context);
 }

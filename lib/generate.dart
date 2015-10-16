@@ -6,9 +6,9 @@ import 'dart:io';
 
 import 'package:cookiecutter/common.dart';
 import 'package:cookiecutter/exceptions.dart';
+import 'package:cookiecutter/mustache.dart';
 import 'package:cookiecutter/utils.dart';
 import 'package:glob/glob.dart';
-import 'package:mustache4dart/mustache4dart.dart';
 import 'package:path/path.dart' as path;
 
 import 'common.dart';
@@ -60,7 +60,8 @@ bool copyWithoutRender(String path, Map context) {
 
 /// Ensures that dirname is a templated directory name.
 bool ensureDirIsTemplated(String dirName) {
-  if (dirName.contains('{{') && dirName.contains('}}')) {
+  if (dirName.contains(OPENING_DELIMETER) &&
+      dirName.contains(CLOSING_DELIMETER)) {
     return true;
   } else {
     throw new NonTemplatedInputDirException();
@@ -138,13 +139,12 @@ void generateFile(
   // just copy over binary files. Don't render.
   logging.fine('Check $inFile to see if it\' is a binary');
 
-
   if (isBinary(inFile)) {
     logging.fine('Copying binary $inFile to $outfile without rendering');
     new File(inFile).copySync(outfile);
   } else {
     var renderedFile = render(new File(inFile).readAsStringSync(), context);
-      logging.fine('Writing $outfile');
+    logging.fine('Writing $outfile');
     new File(outfile).writeAsStringSync(renderedFile);
   }
 
@@ -189,6 +189,7 @@ void generateFiles(
     List<Directory> dirs = Directory.current.listSync(recursive: true)
       ..retainWhere((e) => e is Directory)
       ..removeWhere((e) => e.path.contains('packages'))
+      ..removeWhere((e) => e.path.contains('.pub'))
       ..add(Directory.current);
     dirs.sort((a, b) => a.path.length.compareTo(b.path.length));
     for (Directory rootDir in dirs) {

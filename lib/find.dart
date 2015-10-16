@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:cookiecutter/common.dart';
 import 'package:cookiecutter/exceptions.dart';
+import 'package:cookiecutter/mustache.dart';
 
 /// Determines which child directory of [repoDir] is the project template.
 ///
@@ -18,7 +19,9 @@ String findTemplate(String repoDir) {
   String projectTemplate;
   for (Directory dir in repoDirContents) {
     var path = dir.path;
-    if (path.contains('cookiecutter') && path.contains('{{') && path.contains('}}')) {
+    if (path.contains('cookiecutter') &&
+        path.contains(OPENING_DELIMETER) &&
+        path.contains(CLOSING_DELIMETER)) {
       projectTemplate = path;
       break;
     }

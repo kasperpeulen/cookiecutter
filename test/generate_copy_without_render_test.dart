@@ -1,5 +1,4 @@
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 import 'dart:io';
 import 'package:cookiecutter/utils.dart' as utils;
 import 'package:cookiecutter/generate.dart' as generate;

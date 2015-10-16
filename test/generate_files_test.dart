@@ -2,7 +2,6 @@ import 'package:test/test.dart';
 import 'package:cookiecutter/generate.dart' as generate;
 import 'package:cookiecutter/exceptions.dart';
 import 'dart:io';
-import 'package:cookiecutter/utils.dart';
 import 'package:path/path.dart' as path;
 
 main() {
