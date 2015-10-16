@@ -87,7 +87,9 @@ Map generateContext(
   } catch (e) {
     // JSON decoding error.  Let's throw a new exception that is more
     // friendly for the developer or user.
-    // TODO
+    if (e is FileSystemException) {
+      throw e;
+    }
     throw new ContextDecodingException();
   }
 
