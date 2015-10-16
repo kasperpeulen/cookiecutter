@@ -12,5 +12,8 @@ dependencies:
   yaml: '^2.1.7'
   glob: '^1.0.5'
   mustache4dart: '^1.0.10'
+  args: '^0.13.2'
 dev_dependencies:
   test: '^0.12.4+9'
+executables:
+  cookiecutter:

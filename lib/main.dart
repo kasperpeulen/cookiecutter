@@ -110,7 +110,7 @@ void cookiecutter(String template,
     context = replayLib.load(templateName);
   } else {
     contextFile = path.join(repoDir, 'cookiecutter.json');
-    logging.info('contextFile is $contextFile');
+    logging.fine('contextFile is $contextFile');
 
     context = generateContext(
       contextFile: contextFile,

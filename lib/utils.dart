@@ -20,7 +20,7 @@ rmTree(path) {
 /// Ensures that a directory exists.
 /// [path] : A Directory path.
 makeSurePathExists(String path) {
-  logging.info('Making sure that path exists: $path');
+  logging.fine('Making sure that path exists: $path');
   try {
     new Directory(path).createSync(recursive: true);
   } on FileSystemException {

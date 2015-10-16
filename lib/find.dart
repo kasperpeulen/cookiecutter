@@ -11,7 +11,7 @@ import 'package:cookiecutter/exceptions.dart';
 /// [repoDir] : Local directory of newly cloned repo.
 /// returns [projectTemplate] : Relative path to project template.
 String findTemplate(String repoDir) {
-  logging.info('Searching $repoDir for the project template.');
+  logging.fine('Searching $repoDir for the project template.');
 
   List<FileSystemEntity> repoDirContents = new Directory(repoDir).listSync()
     ..retainWhere((e) => e is Directory);
@@ -24,7 +24,7 @@ String findTemplate(String repoDir) {
     }
   }
   if (projectTemplate != null) {
-    logging.info('The project template appears to be $projectTemplate');
+    logging.fine('The project template appears to be $projectTemplate');
     return projectTemplate;
   } else {
     throw new NonTemplatedInputDirException();

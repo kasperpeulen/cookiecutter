@@ -21,7 +21,9 @@ String expandPath(String path) {
 String get userHomeDir =>
     Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'];
 
-final Logger logging = new Logger('cookiecutter');
+final Logger logging = new Logger('cookiecutter')
+  ..onRecord.listen((LogRecord rec) =>
+      print('${rec.level.name}: ${rec.time}: ${rec.message}'));
 
 // Having this as a global variable, so that it can be mocked.
 Function exitWithSuccess = () {
@@ -31,8 +33,10 @@ Function exitWithSuccess = () {
 bool isBinary(String inFile) {
   bool b;
   try {
-    b = new File(inFile).readAsStringSync().contains('\u0000\u0000\u0000\u0000');
-  } catch(e) {
+    b = new File(inFile)
+        .readAsStringSync()
+        .contains('\u0000\u0000\u0000\u0000');
+  } catch (e) {
     b = true;
   }
   return b;

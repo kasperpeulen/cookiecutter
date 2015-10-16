@@ -22,7 +22,7 @@ void promptAndDeleteRepo(String repoDir, {bool noInput: false}) {
   if (noInput) {
     okToDelete = true;
   } else {
-    okToDelete = askSync(new Question.confirm(
+    okToDelete = ask(new Question.confirm(
         """
     You've cloned $repoDir before.
     Is it okay to delete and re-clone it?
@@ -98,7 +98,7 @@ String clone(String repoUrl,
   } else if (repoType == 'hg') {
     repoDir = path.normalize(path.join(cloneToDir, tail));
   }
-  logging.info('repoDir is $repoDir');
+  logging.fine('repoDir is $repoDir');
 
   if (new Directory(repoDir).existsSync()) {
     promptAndDeleteRepo(repoDir, noInput: noInput);

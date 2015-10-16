@@ -21,7 +21,7 @@ Map getConfig(String configPath) {
     throw new ConfigDoesNotExistException();
   }
 
-  logging.info('configPath is $configPath');
+  logging.fine('configPath is $configPath');
 
   Map yaml;
   try {
@@ -29,6 +29,8 @@ Map getConfig(String configPath) {
   } on YamlException catch(e) {
     throw new InvalidConfiguration(configPath, e.span.start.line, e.message);
   }
+
+  yaml.values.map((e) => expandPath(e));
 
   return {}..addAll(DEFAULT_CONFIG)..addAll(yaml);
 }

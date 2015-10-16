@@ -38,7 +38,7 @@ void runScriptWithContext(String scriptPath, Stringcwd, Map context) {
 void runHook(hookName, projectDir, context) {
   var script = findHooks()[hookName];
   if (script == null) {
-    logging.info('No hooks found');
+    logging.fine('No hooks found');
   }
   runScriptWithContext(script, projectDir, context);
 }

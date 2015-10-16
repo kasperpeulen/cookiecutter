@@ -1,37 +1,19 @@
 /// Functions for generating a project from a project template.
 library cookiecuter.generate;
 
-import 'find.dart';
-import 'hooks.dart';
-import 'common.dart';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:cookiecutter/common.dart';
-import 'package:path/path.dart' as path;
 import 'package:cookiecutter/exceptions.dart';
 import 'package:cookiecutter/utils.dart';
-import 'dart:io';
-import 'dart:convert';
 import 'package:glob/glob.dart';
 import 'package:mustache4dart/mustache4dart.dart';
+import 'package:path/path.dart' as path;
 
-/// Returns true if `path` matches some pattern in the
-/// `_copy_without_render` context setting.
-///
-/// [path] : A file-system path referring to a file or dir that
-/// should be rendered or just copied.
-/// [context] : cookiecutter context.
-bool copyWithoutRender(String path, Map context) {
-  try {
-    for (var dontRender in context['cookiecutter']['_copy_without_render']) {
-      if (new Glob(dontRender).matches(path)) {
-        return true;
-      }
-    }
-  } catch (e) {
-    return false;
-  }
-  return false;
-}
+import 'common.dart';
+import 'find.dart';
+import 'hooks.dart';
 
 /// Modify the given context in place based on the overwrite_context.
 void applyOverwritesToContext(
@@ -55,6 +37,34 @@ void applyOverwritesToContext(
       context[variable] = overwrite;
     }
   });
+}
+
+/// Returns true if `path` matches some pattern in the
+/// `_copy_without_render` context setting.
+///
+/// [path] : A file-system path referring to a file or dir that
+/// should be rendered or just copied.
+/// [context] : cookiecutter context.
+bool copyWithoutRender(String path, Map context) {
+  try {
+    for (var dontRender in context['cookiecutter']['_copy_without_render']) {
+      if (new Glob(dontRender).matches(path)) {
+        return true;
+      }
+    }
+  } catch (e) {
+    return false;
+  }
+  return false;
+}
+
+/// Ensures that dirname is a templated directory name.
+bool ensureDirIsTemplated(String dirName) {
+  if (dirName.contains('{{') && dirName.contains('}}')) {
+    return true;
+  } else {
+    throw new NonTemplatedInputDirException();
+  }
 }
 
 /// Generates the context for a Cookiecutter project template.
@@ -94,7 +104,7 @@ Map generateContext(
     applyOverwritesToContext(obj, extraContext);
   }
 
-  logging.info('Context generated is $context');
+  logging.fine('Context generated is $context');
   return context;
 }
 
@@ -117,75 +127,43 @@ Map generateContext(
 /// [context] : Dict for populating the cookiecutter's variables.
 /// [env] : Jinja2 template execution environment.
 void generateFile({String projectDir, String inFile, String outfile, Map context}) {
-  logging.info('Generating file $inFile');
+  logging.fine('Generating file $inFile');
 
   // Render the path to the output file (not including the root project dir)
-  outfile ??= path.join(projectDir, render(path.relative(inFile), context));
-  // logging.info('outfile is $outfile');
+//  outfile ??= path.join(projectDir, render(path.relative(inFile), context));
+  // logging.fine('outfile is $outfile');
 
   // just copy over binary files. Don't render.
-  logging.info('Check $inFile to see if it\' is a binary');
+  logging.fine('Check $inFile to see if it\' is a binary');
 
   if (isBinary(inFile)) {
-    logging.info('Copying binary $inFile to $outfile without rendering');
+    logging.fine('Copying binary $inFile to $outfile without rendering');
     try {
       new File(inFile).copySync(outfile);
     } catch(e) {
       print(e);
     }
   } else {
-    var tmpl, renderedFile;
+    var renderedFile;
     try {
       var file = new File(inFile);
       renderedFile = render(file.readAsStringSync(), context);
     } catch (e) {
-      throw new Exception('aaaaa');
+      print(e);
     }
 
-    logging.info('Writing $outfile');
+    logging.fine('Writing $outfile');
 
     try {
       new File(outfile).writeAsStringSync(renderedFile);
     } catch(e) {
-      throw new Exception('aaaaa');
+      print(e);
     }
 
   }
 
   // Apply file permissions to output file
   // TODO
-}
-
-/// Renders the name of a directory, creates the directory, and returns its path.
-String renderAndCreateDir(String dirName, Map context, String outputDir,
-    [bool overwriteIfExists = false]) {
-  String renderedDirname = render(dirName, context);
-  logging.info(
-      'Rendered dir $renderedDirname must exists in outputDir $outputDir');
-  String dirToCreate = path.normalize(path.join(outputDir, renderedDirname));
-  bool outputDirExists = new Directory(dirToCreate).existsSync();
-
-  if (overwriteIfExists) {
-    if (outputDirExists) {
-      logging
-          .info('Output directory $dirToCreate already exists, overwriting it');
-    }
-  } else {
-    if (outputDirExists) {
-      throw new OutputDirExistsException(dirToCreate);
-    }
-  }
-  makeSurePathExists(dirToCreate);
-  return dirToCreate;
-}
-
-/// Ensures that dirname is a templated directory name.
-bool ensureDirIsTemplated(String dirName) {
-  if (dirName.contains('{{') && dirName.contains('}}')) {
-    return true;
-  } else {
-    throw new NonTemplatedInputDirException();
-  }
 }
 
 /// Renders the templates and saves them to files.
@@ -201,7 +179,7 @@ void generateFiles(
     outputDir: '.',
     bool overwriteIfExists: false}) {
   String templateDir = findTemplate(repoDir);
-  logging.info('Generating project from $templateDir');
+  logging.fine('Generating project from $templateDir');
   context ??= {};
 
   String unrenderedDir = path.split(templateDir).last;
@@ -216,7 +194,7 @@ void generateFiles(
   // In order to build our files to the correct folder(s), we'll use an
   // absolute path for the target folder (project_dir)
   projectDir = path.absolute(projectDir);
-  logging.info('projectDir is $projectDir');
+  logging.fine('projectDir is $projectDir');
 
   // run pre-gen hook from repoDir
   // TODO workIn(repoDir, () => runHook('pre_gen_project', projectDir, context));
@@ -254,7 +232,7 @@ void generateFiles(
       for (String copyDir in copyDirs) {
         String indir = path.normalize(path.join(root, copyDir));
         String outdir = path.normalize(path.join(projectDir, indir));
-        logging.info('Copying dir $indir to $outdir without rendering');
+        logging.fine('Copying dir $indir to $outdir without rendering');
         Process.runSync('cp', [indir, outdir]);
       }
       dirs = renderDirs;
@@ -268,11 +246,11 @@ void generateFiles(
         if (copyWithoutRender(infile, context)) {
           String outfileRendered = render(infile, context);
           String outfile = path.join(projectDir, outfileRendered);
-          logging.info('Copying file $infile to $outfile without rendering');
+          logging.fine('Copying file $infile to $outfile without rendering');
           new File(infile).copy(outfile);
           continue;
         }
-        logging.info('f is $f');
+        logging.fine('f is $f');
         generateFile(projectDir: projectDir, inFile: infile, outfile: outfile, context: context);
       }
     }
@@ -280,4 +258,27 @@ void generateFiles(
 
   // run post-gen hook from repo_dir
   // TODO workIn(repoDir, () => runHook('post_gen_project', projectDir, context));
+}
+
+/// Renders the name of a directory, creates the directory, and returns its path.
+String renderAndCreateDir(String dirName, Map context, String outputDir,
+    [bool overwriteIfExists = false]) {
+  String renderedDirname = render(dirName, context);
+  logging.fine(
+      'Rendered dir $renderedDirname must exists in outputDir $outputDir');
+  String dirToCreate = path.normalize(path.join(outputDir, renderedDirname));
+  bool outputDirExists = new Directory(dirToCreate).existsSync();
+
+  if (overwriteIfExists) {
+    if (outputDirExists) {
+      logging
+          .info('Output directory $dirToCreate already exists, overwriting it');
+    }
+  } else {
+    if (outputDirExists) {
+      throw new OutputDirExistsException(dirToCreate);
+    }
+  }
+  makeSurePathExists(dirToCreate);
+  return dirToCreate;
 }
